@@ -3,7 +3,7 @@
       
     <div class="listenkreuz">
         <div class="holder">
-            <button class="votefield" @click='handleListCross'>
+            <button class="votefield" @click.once='handleListCross'>
                 <div class="cross" ref="cross"></div>
             </button>
         </div>
@@ -16,13 +16,10 @@
 
     <div class="row" v-for="(item, index) in this.candidates" v-bind:key="index">
         <div class="holder">
-
             <div class="nr" >
                 <p>00{{item}}</p>
             </div>
-
-            <input type="text" class="votefield" @change="handleVoting" />
-            
+            <input type="text" class="votefield" @change="handleVoting" :value="currentVote" /> <!--v-model="currentVote"-->
         </div>
         <div class="liner"></div>
     </div>
@@ -37,19 +34,23 @@
             return {
                 votes: 24,
                 candidates: 24,
-                cross: ""
+                cross: "",
+                currentVote: ""
             }
         },
         methods: {
             handleListCross(event){
                 event.target.childNodes[0].innerText = 'X';
                 this.cross = true;
-                console.log(this.votes);
+                // console.log(this.votes);
+                const voteDist = this.candidates / this.votes;
+                this.currentVote = voteDist;
+
             },
             handleVoting(event){
                 let assigned = event.srcElement.value;
                 this.votes = this.votes - assigned;
-                console.log(this.votes); 
+                // console.log(this.votes); 
             }
         }
     }
