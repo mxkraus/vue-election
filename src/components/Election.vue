@@ -1,16 +1,19 @@
 <template>
   <div class='election'>
       
-    <div class="listenkreuz">
+    <div class="row listenkreuz">
         <div class="holder">
-            <button class="votefield" @click.once='handleListCross'>
-                <div class="cross" ref="cross"></div>
+            <button class="votefield" @click='toggleCross'>
+                <div class="cross" v-if="showCross" ref="cross">X</div>
             </button>
         </div>
         <div class="liner">
-            <div>
-                Sie haben {{ votes }} Stimmen!
-            </div>
+            <p>
+                Sie haben noch {{ total }} Stimmen!
+            </p>
+            <p>
+                Gehäufelte Stimmen: {{ accumulated }}
+            </p>
         </div>
     </div>
 
@@ -19,7 +22,7 @@
             <div class="nr" >
                 <p>00{{item}}</p>
             </div>
-            <input type="text" class="votefield" @change="handleVoting" :value="currentVote" /> <!--v-model="currentVote"-->
+            <input type="text" maxlength="1" ref="candidate" class="votefield" @change="handleVoting(index, $event)"/>
         </div>
         <div class="liner"></div>
     </div>
@@ -32,27 +35,135 @@
     export default {
         data() {
             return {
-                votes: 24,
+                total: 24,        // Gesamtstimmen
                 candidates: 24,
-                cross: "",
-                currentVote: ""
+                accumulated: 0,
+                previousVote: 0,
+                showCross: false,
+                candidatesWithAccumulation: [],
+                candidatesWithVoting: [],
+                candidateVote: "" // hält die Stimmen, die der Kandidat bekommen hat
             }
         },
-        methods: {
-            handleListCross(event){
-                event.target.childNodes[0].innerText = 'X';
-                this.cross = true;
-                // console.log(this.votes);
-                const voteDist = this.candidates / this.votes;
-                this.currentVote = voteDist;
+        beforeCreate() {    /*console.log('beforeCreated');*/   },
+        created() {         /*console.log('created');*/         },
+        beforeMount() {     /*console.log('beforeMount');*/     },
+        mounted() {         /*console.log('mountd');*/          },
+        beforeUpdate() {    /*console.log('beforeUpdate');*/    },
+        updated() {
 
+            // Alle Kandidaten sammeln
+            let allCandidates = this.$refs.candidate;
+
+            /**
+             * Hier muss der Array zurückgesetzt werden, sonst zähl er das neue daszu
+             */
+            this.candidatesWithAccumulation = [];
+            allCandidates.forEach((element, index) => {
+                if(element.value > 1){
+                    this.candidatesWithAccumulation.push(index);
+                }
+            });
+
+            /**
+             * Alle Kandidaten sammlen, die irgend eine Stimme erhalten haben
+             */
+            this.candidatesWithVoting = [];
+            allCandidates.forEach((element, index) => {
+                if(element.value >= 1){
+                    let candi = {
+                        idx: index,
+                        vote: element.value
+                    };
+                    this.candidatesWithVoting.push(candi);
+                }
+            });
+
+        },
+        methods: {
+            handleVoting(index, event){
+
+                let assignedVote = event.srcElement.value; // Eingegebener Wert
+
+                if( assignedVote == '' ){
+                    try{
+                        this.total += parseInt(this.candidatesWithVoting.find( c => c.idx == index ).vote);
+                    }catch(err){
+                        console.log(err);
+                    }
+                    return;
+                }
+
+                if( this.total > 0 ){ // Noch Stimmen verfügbar
+
+                    // Stimmen wurden gehäufelt
+                    if( assignedVote > 1 && assignedVote <= 3 ){
+
+                        this.accumulated += parseInt(assignedVote);
+
+                    }else if( assignedVote > 3 ){
+
+                        try {
+                            event.srcElement.value = this.candidatesWithVoting[index].vote;
+                        } catch(err) {
+                            event.srcElement.value = '';
+                        }
+
+                        alert("Bitte nicht mehr als 3 Stimmen je Kandidat vergeben!")
+                        return;
+
+                    }
+
+                    // Angegebene Stimmen von Gesamtstimmen abziehen
+                    this.total -= assignedVote;
+
+                }else{ // Keine Stimmen mehr verfügbar
+
+                    event.srcElement.value = '';
+                    alert("Alle Stimmen bereits vergeben!");
+                    return; 
+
+                }
+                
             },
-            handleVoting(event){
-                let assigned = event.srcElement.value;
-                this.votes = this.votes - assigned;
-                // console.log(this.votes); 
+            toggleCross(){
+
+                // Listenkreuz anzeigen
+                this.showCross = !this.showCross;
+
+                if( this.showCross == true ){
+
+                    for(let i=0; i<this.candidates; i++){
+
+                        if(this.$refs.candidate[i].value == 2 || this.$refs.candidate[i].value == 3){
+                            continue; // Kandidaten mit gehäufelten Stimmen nicht beachten
+                        }
+
+                        this.$refs.candidate[i].value = 1;
+                        this.total--;
+                        if(this.total == 0){return;}
+
+                    }
+                    
+                }else{
+
+                    // Stimmen wiederherstellen
+                    this.candidateVote = '';   
+                    this.total = this.candidates - this.accumulated;
+
+                    for(let i=0; i<this.candidates; i++){
+                        if(this.$refs.candidate[i].value == 2 || this.$refs.candidate[i].value == 3){
+                            continue; // Kandidaten mit gehäufelten Stimmen nicht beachten 
+                        }
+                        this.$refs.candidate[i].value = '';
+                    }
+                }
+
             }
+
+
         }
+        
     }
 
 </script>
