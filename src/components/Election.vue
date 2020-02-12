@@ -1,5 +1,7 @@
 <template>
-  <div class='election'>
+  <div class='election-card'>
+
+    <header></header>
       
     <div class="row listenkreuz">
         <div class="holder">
@@ -7,7 +9,7 @@
         </div>
         <div class="holder">
             <button class="votefield" @click='toggleCross'>
-                <div class="cross" v-if="showCross" ref="cross">X</div>
+                <div id="toggleCross" class="cross" v-if="showCross" ref="cross">X</div>
             </button>
         </div>
         <div class="liner">
@@ -145,11 +147,9 @@
                     this.total -= assignedVote;
 
                 }else{ // Keine Stimmen mehr verfügbar
-                    if( this.showCross == false){
-                        event.srcElement.value = '';
-                        alert("Alle Stimmen bereits vergeben!");
-                        return; 
-                    }
+                    event.srcElement.value = '';
+                    alert("Alle Stimmen bereits vergeben!");
+                    return; 
                 }
                 
 
@@ -160,6 +160,10 @@
                 this.showCross = !this.showCross;
 
                 if( this.showCross == true ){
+
+                    if(this.total == 0){
+                        return;
+                    }
 
                     for(let i=0; i<this.candidates; i++){
 
@@ -197,15 +201,26 @@
 
 <style scoped lang="scss">
 
-    .election{
+    .election-card{
         margin: 0 auto;
         width: 70%;
         background-color: white;
-        display: table;
         border-collapse: collapse;
+        box-shadow: 2px 2px 10px #aaa;
+
+        header{
+            content: '';
+            height: 20px;
+            width: 100%;
+            display: block;
+            background-color: #2a7fb7;
+        }
+
+        @media only screen and (max-width: 768px) {
+            width: 100%;
+        }
 
         .listenkreuz{
-
             .liner{
                 height: 80px;
                 span{
@@ -219,12 +234,12 @@
             width: 40px;
             height: 40px;
             display: block;
-            background-color: #9dafbe;
+            background-color: #fff;
+            border: 1px solid #2a7fb7;
             border-radius: 40px;
             margin: 0 auto;
             line-height: 50px;
             position: relative;
-            border: none;
             text-align: center;
             font-size: 20px;
             margin: 5px;
@@ -232,21 +247,21 @@
             &:active,
             &:focus{
                 outline:none;
-                border: none;
+                border: 1px solid #2a7fb7;
             }
         }
 
         .cross{
             font-size: 30px;
             font-weight: bold;
-            color: blue;
+            color: #2a7fb7;
             position: relative;
             top: -2px;
             left: 1px;
         }
         
         .row{
-            border: 1px solid #000;
+            border: 1px solid #2a7fb7;
             display:table-row;
             height: 50px;
             width: 100%;
