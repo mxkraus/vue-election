@@ -1,7 +1,15 @@
 <template>
+
   <div class='election-card'>
 
-    <header></header>
+    <header id="tableHeader" class="header voting">
+        <p>Gesamtanzahl Kandidaten: {{ candidates }}</p>
+        <p>Sie haben noch {{ total }} Stimmen.</p>
+        <p>Gehäufelte Stimmen: {{ accumulated }}</p>
+        <!-- <div class="subtitle">
+            <h3>Wahlvorschlag 01</h3>
+        </div> -->
+    </header>
       
     <div class="row listenkreuz">
         <div class="holder">
@@ -13,37 +21,60 @@
             </button>
         </div>
         <div class="liner">
-            <span>Sie haben noch {{ total }} Stimmen. <br> Gehäufelte Stimmen: {{ accumulated }}</span>
+            <h2><small>Kennwort</small><br/>CSU - Christlich Soziale Union</h2>
         </div>
     </div>
 
     <div class="row" v-for="(item, index) in this.candidates" v-bind:key="index">
         <div class="holder" >
-            <span>00{{item}}</span>
+            <span>{{item}}</span>
         </div>
         <div class="holder">
-            <input type="text" maxlength="1" ref="candidate" class="votefield" @change="handleVoting(index, $event)"/>
+            <input type="text" maxlength="1" ref="candidate" class="votefield" @focus="handleFocus" @change="handleVoting(index, $event)"/>
         </div>
-        <div class="liner"></div>
+        <div class="liner">
+            <span>
+                <strong>
+                    {{candData[index].name}} 
+                    {{candData[index].surname}},
+                </strong> 
+                {{candData[index].age}} Jahre <br/> 
+                {{candData[index].job}}
+            </span>
+        </div>
     </div>
-      
+
+    <!-- <submenu
+        v-if="showSubMenu == true"
+        v-on:choose-vote="chosenVote = $event" 
+    ></submenu> -->
+
   </div>
+
 </template>
 
 <script>
 
+    import Submenu from "./Submenu.vue";
+
     export default {
+        components: {
+            Submenu
+        },
+        props: ['candata'],
         data() {
             return {
                 total: 24,        // Gesamtstimmen
-                candidates: 24,
+                candidates: this.candata.length,
+                candData: this.candata,
                 accumulated: 0,
                 previousVote: 0,
                 showCross: false,
                 allCandidates: [],
                 candidatesWithAccumulation: [],
                 candidatesWithVoting: [],
-                candidateVote: "" // hält die Stimmen, die der Kandidat bekommen hat
+                showSubMenu: false,
+                chosenVote: null,
             }
         },
         beforeCreate() {    /*console.log('beforeCreated');*/   },
@@ -90,6 +121,17 @@
                         event.srcElement.value = '';
                     }
                     alert("Bitte nicht mehr als 3 Stimmen je Kandidat vergeben!")
+                    return;
+                }
+
+                if( this.total - assignedVote < 0 ){
+                    try {
+                        // altes Voting wiederherstellen
+                        event.srcElement.value = this.candidatesWithVoting[index].vote;
+                    } catch(err) {
+                        event.srcElement.value = '';
+                    }
+                    alert("Nicht ausreichend Stimmen vorhanden!");
                     return;
                 }
 
@@ -165,34 +207,51 @@
                         return;
                     }
 
-                    for(let i=0; i<this.candidates; i++){
+                    let i = 0;
+                    let round = 0;
+                    while( this.total > 0 ){
 
-                        if(this.$refs.candidate[i].value == 2 || this.$refs.candidate[i].value == 3){
+                        let currentValue = this.$refs.candidate[i].value;
+                        currentValue = currentValue == '' ? 0 : parseInt(currentValue);
+
+                        if(currentValue == 2 || currentValue == 3){
+                            i++;
                             continue; // Kandidaten mit gehäufelten Stimmen nicht beachten
                         }
 
-                        this.$refs.candidate[i].value = 1;
-                        this.total--;
-                        if(this.total == 0){return;}
+                        if( round == 2 ){
+                            this.$refs.candidate[i].value = currentValue + 1;
+                        }else{
+                            if(currentValue == 1){
+                                // Kandidat hatte vorher scohn 1 Stimme, soll also durch das Listenkreuz nich tnoch mehr behkommen
+                                i++;
+                                continue;
+                            }
+                            this.$refs.candidate[i].value += 1;
+                        }
+
+                        i++;
+                        this.total--; 
+
+                        if( i == this.candidates ){
+                            i = 0; 
+                            round = 2;
+                        }
 
                     }
                     
                 }else{
 
                     // Stimmen wiederherstellen
-                    this.candidateVote = '';   
-                    this.total = this.candidates - this.accumulated;
+                    this.total = 24;
+                    this.accumulated = 0;
 
                     for(let i=0; i<this.candidates; i++){
-                        if(this.$refs.candidate[i].value == 2 || this.$refs.candidate[i].value == 3){
-                            continue; // Kandidaten mit gehäufelten Stimmen nicht beachten 
-                        }
                         this.$refs.candidate[i].value = '';
                     }
                 }
 
             }
-
         }
         
     }
@@ -203,32 +262,50 @@
 
     .election-card{
         margin: 0 auto;
-        width: 70%;
+        width: 600px;
         background-color: white;
         border-collapse: collapse;
         box-shadow: 2px 2px 10px #aaa;
+        display: table;
+        margin-bottom: 10%;
 
-        header{
-            content: '';
-            height: 20px;
-            width: 100%;
-            display: block;
-            background-color: #2a7fb7;
+        .header{
+            p{margin: 0;}
+            padding: 10px 20px;
+            font-weight: bold;
+            font-size: 1.3em;
+            display: table-caption;
+            background-color: #fff;
+            text-align: left;
+            border: 1px solid black;
+            border-top: none;
+            border-bottom: none;
+            &.voting{
+                background-color: #2a7fb7;
+                color: #fff;
+                text-align: center;
+            }
+            h3{
+                margin: 0;
+                height: 30px;
+            }
+            &.fixed{
+                position: fixed;
+                top: 0;
+                z-index: 9;
+                width: 100%;
+                left: 0;
+                border: none;
+                font-size: 16px;
+                padding: 5px 0;
+            }
         }
 
         @media only screen and (max-width: 768px) {
             width: 100%;
         }
 
-        .listenkreuz{
-            .liner{
-                height: 80px;
-                span{
-                    position: relative;
-                    bottom: -16px;
-                }
-            }
-        }
+
 
         .votefield{
             width: 40px;
@@ -270,8 +347,18 @@
 
         .liner{
             display: table-cell;
+            vertical-align: middle;
+            text-align: left;
+            padding-left: 1rem;
             border: inherit;
             height: 50px;
+                line-height: 22px;
+        }
+
+        .listenkreuz .liner {
+            h2{
+                line-height: 30px;
+            }   
         }
 
         .holder{
@@ -281,6 +368,7 @@
             height: 50px;
             vertical-align: middle;
         }
+
     }
     
 </style>

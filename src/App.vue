@@ -1,15 +1,21 @@
 <template>
   <div id="app">
-    <Election />
+    <Election :candata="this.myJson" />
   </div>
 </template>
 
 <script>
 
 import Election from './components/Election.vue';
+import json from './models/candidates.json';
 
 export default {
   name: 'app',
+  data(){
+    return{
+      myJson: json
+    }
+  },
   components: {
     Election
   }

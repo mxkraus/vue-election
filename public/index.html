@@ -22,5 +22,17 @@
     </noscript>
     <div id="app"></div>
     <!-- built files will be auto injected -->
+    <script>
+      window.onscroll = function() {scrollFunction()};
+
+      function scrollFunction() {
+        if (document.documentElement.scrollTop > 1) {
+          document.getElementById('tableHeader').className = 'header voting fixed';
+        } else {
+          document.getElementById('tableHeader').className = 'header voting';
+        }
+      }
+
+    </script>
   </body>
 </html>
