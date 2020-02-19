@@ -21,33 +21,41 @@
             </button>
         </div>
         <div class="liner">
-            <h2><small>Kennwort</small><br/>CSU - Christlich Soziale Union</h2>
+            <!-- <h2><small>Kennwort</small><br/>CSU - Christlich Soziale Union</h2> -->
         </div>
     </div>
 
     <div class="row" v-for="(item, index) in this.candidates" v-bind:key="index">
         <div class="holder" >
-            <span>{{item}}</span>
+            <span>{{fillItem(item)}}</span>
         </div>
         <div class="holder">
-            <input type="text" maxlength="1" ref="candidate" class="votefield" @focus="handleFocus" @change="handleVoting(index, $event)"/>
+            <input 
+                type="text" 
+                maxlength="1"
+                ref="candidate" 
+                class="votefield" 
+                :value="chosenVote" 
+                @click="triggerSubMenu(index, $event)" 
+                @change="handleVoting(index, $event)"
+            />
         </div>
         <div class="liner">
-            <span>
+            <!-- <span>
                 <strong>
                     {{candData[index].name}} 
                     {{candData[index].surname}},
                 </strong> 
                 {{candData[index].age}} Jahre <br/> 
                 {{candData[index].job}}
-            </span>
+            </span> -->
         </div>
     </div>
 
-    <!-- <submenu
+    <submenu
         v-if="showSubMenu == true"
         v-on:choose-vote="chosenVote = $event" 
-    ></submenu> -->
+    ></submenu>
 
   </div>
 
@@ -64,7 +72,7 @@
         props: ['candata'],
         data() {
             return {
-                total: 24,        // Gesamtstimmen
+                total: 24,
                 candidates: this.candata.length,
                 candData: this.candata,
                 accumulated: 0,
@@ -74,7 +82,7 @@
                 candidatesWithAccumulation: [],
                 candidatesWithVoting: [],
                 showSubMenu: false,
-                chosenVote: null,
+                chosenVote: null
             }
         },
         beforeCreate() {    /*console.log('beforeCreated');*/   },
@@ -108,6 +116,19 @@
 
         },
         methods: {
+            triggerSubMenu(index, event){
+                this.showSubMenu = !this.showSubMenu;
+                console.log(index);
+                console.log(this.$refs[index]);
+            },
+            fillItem(item){
+                switch (item.toString().length) {
+                    case 1: item = '10' + item; break;
+                    case 2: item = '1' + item; break;
+                    default: break;
+                }
+                return item;
+            },
             handleVoting(index, event){
 
                 let aV = parseInt(event.srcElement.value); // Eingegebener Wert
@@ -174,7 +195,7 @@
                     }
 
                 }catch(err){
-                    console.log(err);
+                    // console.log(err);
                 }
 
 
