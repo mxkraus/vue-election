@@ -52,9 +52,11 @@
         </div>
     </div>
 
+        <!-- v-on:choose-vote="chosenVote = $event"  -->
+
     <submenu
         v-if="showSubMenu == true"
-        v-on:choose-vote="chosenVote = $event" 
+        v-on:choose-vote="handleChild"
     ></submenu>
 
   </div>
@@ -82,7 +84,8 @@
                 candidatesWithAccumulation: [],
                 candidatesWithVoting: [],
                 showSubMenu: false,
-                chosenVote: null
+                chosenVote: null,
+                clickedIndex: 0
             }
         },
         beforeCreate() {    /*console.log('beforeCreated');*/   },
@@ -116,10 +119,12 @@
 
         },
         methods: {
-            triggerSubMenu(index, event){
+            handleChild( value ){
+                this.$refs.candidate[this.clickedIndex].value = value;
+            },
+            triggerSubMenu(index){
+                this.clickedIndex = index;
                 this.showSubMenu = !this.showSubMenu;
-                console.log(index);
-                console.log(this.$refs[index]);
             },
             fillItem(item){
                 switch (item.toString().length) {
@@ -341,6 +346,7 @@
             text-align: center;
             font-size: 20px;
             margin: 5px;
+            cursor: pointer;
 
             &:active,
             &:focus{
