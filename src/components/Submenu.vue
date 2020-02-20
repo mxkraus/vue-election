@@ -3,6 +3,9 @@
     <div id="submenu">
         <ul>
             <li>
+                <button value="" class="voteButton remove" @click="$emit('choose-vote', '')">-</button>
+            </li>
+            <li>
                 <button value="1" class="voteButton" @click="$emit('choose-vote', 1)">1</button>
             </li>
             <li>
@@ -33,7 +36,7 @@ export default {
 #submenu{
     position: fixed;
     bottom: 0;
-        margin-left: 50%;
+    margin-left: 50%;
     left: -100px;
     ul{
         padding: 0;
@@ -47,10 +50,13 @@ export default {
                 width: 45px;
                 height: 45px;
                 border-radius: 40px;
-                border: 2px solid #d35400;
+                border: 2px solid #0054d3;
                 background-color: #fff;
                 cursor: pointer;
                 outline: none;
+                &.remove{
+                    border-color: #d35400;
+                }
             }
         }
     }

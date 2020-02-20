@@ -35,10 +35,9 @@
                 maxlength="1"
                 ref="candidate" 
                 class="votefield" 
-                :value="chosenVote" 
                 @click="triggerSubMenu(index, $event)" 
                 @change="handleVoting(index, $event)"
-            />
+            /><!---->
         </div>
         <div class="liner">
             <!-- <span>
@@ -52,7 +51,6 @@
         </div>
     </div>
 
-        <!-- v-on:choose-vote="chosenVote = $event"  -->
 
     <submenu
         v-if="showSubMenu == true"
@@ -119,8 +117,19 @@
 
         },
         methods: {
+            resetElement( el, idx, msg ){
+                try {
+                    // altes Voting wiederherstellen
+                    el = this.candidatesWithVoting[idx].vote;
+                } catch(err) { el.value = ''; }
+                alert(msg)
+                return;
+            },
             handleChild( value ){
-                this.$refs.candidate[this.clickedIndex].value = value;
+                let elem = this.$refs.candidate[this.clickedIndex];
+                elem.value = value;
+                this.handleVoting( this.clickedIndex, elem, value);
+                this.showSubMenu = false;
             },
             triggerSubMenu(index){
                 this.clickedIndex = index;
@@ -134,31 +143,24 @@
                 }
                 return item;
             },
-            handleVoting(index, event){
+            handleVoting(index, elem, value){
 
-                let aV = parseInt(event.srcElement.value); // Eingegebener Wert
-                let assignedVote = Number.isNaN(aV) ? '' : aV;
+                let assignedVote = Number.isNaN(value) ? '' : value;
 
-                if( assignedVote > 3 ){ // nur max. 3 Stimmen gültig
-                    try {
-                        // altes Voting wiederherstellen
-                        event.srcElement.value = this.candidatesWithVoting[index].vote;
-                    } catch(err) {
-                        event.srcElement.value = '';
-                    }
-                    alert("Bitte nicht mehr als 3 Stimmen je Kandidat vergeben!")
-                    return;
+                if( assignedVote > 3 ){
+                    this.resetElement( 
+                        elem, 
+                        index,
+                        "Bitte nicht mehr als 3 Stimmen je Kandidat vergeben!" 
+                    );
                 }
 
                 if( this.total - assignedVote < 0 ){
-                    try {
-                        // altes Voting wiederherstellen
-                        event.srcElement.value = this.candidatesWithVoting[index].vote;
-                    } catch(err) {
-                        event.srcElement.value = '';
-                    }
-                    alert("Nicht ausreichend Stimmen vorhanden!");
-                    return;
+                    this.resetElement( 
+                        elem, 
+                        index,
+                        "Nicht ausreichend Stimmen vorhanden!" 
+                    );
                 }
 
                 try{
@@ -199,9 +201,7 @@
                         return;
                     }
 
-                }catch(err){
-                    // console.log(err);
-                }
+                }catch(err){ console.log(err); }
 
 
                 if( this.total > 0 ){ 
@@ -215,7 +215,7 @@
                     this.total -= assignedVote;
 
                 }else{ // Keine Stimmen mehr verfügbar
-                    event.srcElement.value = '';
+                    elem.value = '';
                     alert("Alle Stimmen bereits vergeben!");
                     return; 
                 }
