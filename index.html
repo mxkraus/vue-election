@@ -1,7 +1,15 @@
-<!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><link rel=icon href=/wahl/favicon.ico><title>Das Wahl-Game</title><style>html {
+<!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><link rel=icon href=/wahlspiel/favicon.ico><title>Kommunalwahl 2020</title><style>html {
         height: 100vh;
         width: 100vw;
         background-color: #fff;
         /* background: hsl(153, 48%, 49%); */
         /* background: linear-gradient(15deg,hsla(153, 48%, 49%, 0.9) 0%, hsla(153, 48%, 49%, 0.6) 100%); */
-      }</style><link href=/wahl/css/app.cabf4a62.css rel=preload as=style><link href=/wahl/js/app.66ec47d5.js rel=preload as=script><link href=/wahl/js/chunk-vendors.2d29b587.js rel=preload as=script><link href=/wahl/css/app.cabf4a62.css rel=stylesheet></head><body><noscript><strong>Sorry but Vue Calculator doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript><div id=app></div><script src=/wahl/js/chunk-vendors.2d29b587.js></script><script src=/wahl/js/app.66ec47d5.js></script></body></html>
+      }</style><link href=/wahlspiel/css/app.d13c4d8b.css rel=preload as=style><link href=/wahlspiel/js/app.c9ec3afb.js rel=preload as=script><link href=/wahlspiel/js/chunk-vendors.5087daf9.js rel=preload as=script><link href=/wahlspiel/css/app.d13c4d8b.css rel=stylesheet></head><body><noscript><strong>Sorry but Vue Calculator doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript><div id=app></div><script>window.onscroll = function() {scrollFunction()};
+
+      function scrollFunction() {
+        if (document.documentElement.scrollTop > 1) {
+          document.getElementById('tableHeader').className = 'header voting fixed';
+        } else {
+          document.getElementById('tableHeader').className = 'header voting';
+        }
+      }</script><script src=/wahlspiel/js/chunk-vendors.5087daf9.js></script><script src=/wahlspiel/js/app.c9ec3afb.js></script></body></html>
