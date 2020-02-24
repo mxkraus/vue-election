@@ -1,5 +1,4 @@
 <template>
-
   <div class='election-card'>
 
     <header id="tableHeader" class="header voting">
@@ -17,11 +16,13 @@
         </div>
         <div class="holder">
             <button class="votefield" @click='toggleCross'>
-                <div id="toggleCross" class="cross" v-if="showCross" ref="cross">X</div>
+                <div id="toggleCross" class="cross" v-if="showCross" ref="cross">
+                    <span>+</span>
+                </div>
             </button>
         </div>
         <div class="liner">
-            <!-- <h2><small>Kennwort</small><br/>CSU - Christlich Soziale Union</h2> -->
+            <h2><small>Kennwort</small><br/>CSU - Christlich Soziale Union</h2>
         </div>
     </div>
 
@@ -31,34 +32,33 @@
         </div>
         <div class="holder">
             <input 
+                readonly
                 type="text" 
                 maxlength="1"
                 ref="candidate" 
                 class="votefield" 
                 @click="triggerSubMenu(index, $event)" 
-                @change="handleVoting(index, $event)"
-            /><!---->
+                :class="{current:index == isActive}"
+            />
         </div>
         <div class="liner">
-            <!-- <span>
+            <span>
                 <strong>
                     {{candData[index].name}} 
                     {{candData[index].surname}},
                 </strong> 
                 {{candData[index].age}} Jahre <br/> 
                 {{candData[index].job}}
-            </span> -->
+            </span>
         </div>
     </div>
 
-
     <submenu
         v-if="showSubMenu == true"
-        v-on:choose-vote="handleChild"
+        v-on:choose-vote="handleSubMenuVote"
     ></submenu>
 
   </div>
-
 </template>
 
 <script>
@@ -82,8 +82,8 @@
                 candidatesWithAccumulation: [],
                 candidatesWithVoting: [],
                 showSubMenu: false,
-                chosenVote: null,
-                clickedIndex: 0
+                clickedIndex: 0,
+                isActive: null
             }
         },
         beforeCreate() {    /*console.log('beforeCreated');*/   },
@@ -117,15 +117,18 @@
 
         },
         methods: {
-            resetElement( el, idx, msg ){
+            resetElement( el, idx, msg, err = false ){
+                alert(msg)
                 try {
                     // altes Voting wiederherstellen
-                    el = this.candidatesWithVoting[idx].vote;
-                } catch(err) { el.value = ''; }
-                alert(msg)
-                return;
+                    if( err == true ){ throw "Error"; }
+                    el.value = this.candidatesWithVoting[idx].vote;
+                } catch(err) { 
+                    el.value = ''; 
+                }
+                
             },
-            handleChild( value ){
+            handleSubMenuVote( value ){
                 let elem = this.$refs.candidate[this.clickedIndex];
                 elem.value = value;
                 this.handleVoting( this.clickedIndex, elem, value);
@@ -133,7 +136,10 @@
             },
             triggerSubMenu(index){
                 this.clickedIndex = index;
+                this.$refs.candidate[index];
                 this.showSubMenu = !this.showSubMenu;
+                this.isActive = index;
+                console.log(index);
             },
             fillItem(item){
                 switch (item.toString().length) {
@@ -147,20 +153,13 @@
 
                 let assignedVote = Number.isNaN(value) ? '' : value;
 
-                if( assignedVote > 3 ){
-                    this.resetElement( 
-                        elem, 
-                        index,
-                        "Bitte nicht mehr als 3 Stimmen je Kandidat vergeben!" 
-                    );
-                }
-
                 if( this.total - assignedVote < 0 ){
                     this.resetElement( 
                         elem, 
                         index,
-                        "Nicht ausreichend Stimmen vorhanden!" 
+                        "Nicht ausreichend Stimmen vorhanden!" ,
                     );
+                    return;
                 }
 
                 try{
@@ -180,7 +179,8 @@
                     }else if( assignedVote > prevVoting ){
                         diff = assignedVote - prevVoting;
                         // Nur abziehen wenn eh nicht schon alle Stimmen weg sind
-                        this.total -= this.showCross == false ? diff : 0; 
+                        // this.total -= this.showCross == false ? diff : 0; 
+                        this.total -= diff; 
                         this.accumulated += prevVoting == 1 ? assignedVote : diff;
 
                         if(this.showCross == true){
@@ -259,10 +259,10 @@
                         i++;
                         this.total--; 
 
-                        if( i == this.candidates ){
-                            i = 0; 
-                            round = 2;
-                        }
+                        // if( i == this.candidates ){
+                        //     i = 0; 
+                        //     round = 2;
+                        // }
 
                     }
                     
@@ -294,7 +294,6 @@
         box-shadow: 2px 2px 10px #aaa;
         display: table;
         margin-bottom: 10%;
-
         .header{
             p{margin: 0;}
             padding: 10px 20px;
@@ -331,24 +330,25 @@
             width: 100%;
         }
 
-
-
         .votefield{
             width: 40px;
             height: 40px;
             display: block;
             background-color: #fff;
             border: 1px solid #2a7fb7;
+
             border-radius: 40px;
-            margin: 0 auto;
-            line-height: 50px;
+            // margin: 0 auto;
+            // line-height: 50px;
             position: relative;
             text-align: center;
             font-size: 20px;
             margin: 5px;
             cursor: pointer;
 
-            &:active,
+            &.current{
+                background-color: #e5f1f6;
+            }
             &:focus{
                 outline:none;
                 border: 1px solid #2a7fb7;
@@ -356,16 +356,21 @@
         }
 
         .cross{
-            font-size: 30px;
-            font-weight: bold;
-            color: #2a7fb7;
+            font-size: 100px;         
             position: relative;
-            top: -2px;
-            left: 1px;
+            line-height: 0;
+            font-weight: bold;
+            span{
+                position: absolute;
+                transform: rotate(45deg);
+                color: #2a7fb7;
+                top: -6px;
+                left: -13px;
+            }
         }
         
         .row{
-            border: 1px solid #2a7fb7;
+            border: 1px solid #08090a;
             display:table-row;
             height: 50px;
             width: 100%;
